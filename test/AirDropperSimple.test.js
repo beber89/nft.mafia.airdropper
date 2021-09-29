@@ -6,7 +6,7 @@ let contracts =  {
         MockToken: artifacts.require('MafiaArtMock'),
 }
 
-describe("AirDropper", function() {
+describe("AirDropperSimple", function() {
   before(async function () {
       this.accounts = await web3.eth.getAccounts();
 
@@ -31,31 +31,25 @@ describe("AirDropper", function() {
   // TODO: test setters
 
   it("recallTokens - 20 consecutive obselete mints", async function() {
-    let mintables = [...Array(20).keys()];
-    for (let i=0; i < mintables.length; i++) {
-      await this.mockObsToken.mint(this.bob, i+1);
+    let mintables = [...Array(20).keys()].map(x => x+1);
+    for (let i of mintables) {
+      await this.mockObsToken.mint(this.bob, i);
     }
-     await this.airDropper.recallTokens();
+     await this.airDropper.airdrop(mintables);
      expect(await this.mockNewToken.totalSupply()).to.be.bignumber.equal(new BN(20));
   });
 
   it("recallTokens - 50 consecutive obselete mints, finished on three runs", async function() {
-    let mintables = [...Array(50).keys()];
-    for (let i=0; i < mintables.length; i++) {
-      await this.mockObsToken.mint(this.bob, i+1);
+    let mintables = [...Array(50).keys()].map(x => x+1);
+    for (let i of mintables) {
+      await this.mockObsToken.mint(this.bob, i);
     }
-     await this.airDropper.recallTokens();
-     expect(await this.mockNewToken.totalSupply()).to.be.bignumber.equal(new BN(20));
-
-     await this.airDropper.recallTokens();
-     expect(await this.mockNewToken.totalSupply()).to.be.bignumber.equal(new BN(40));
-
-     await this.airDropper.recallTokens();
+     await this.airDropper.airdrop(mintables);
      expect(await this.mockNewToken.totalSupply()).to.be.bignumber.equal(new BN(50));
   });
    
   // takes  alot of time to run - might need to increase timeout on different devices
-  it("recallTokens - almost realistic scenario", async function() {
+  it.only("recallTokens - almost realistic scenario", async function() {
     // total of 150 tokens need recall
     // Zeroth 2000 newTokens are complete
     // First 2000 missing 15 (should be minted according to obsTokens)
@@ -70,6 +64,8 @@ describe("AirDropper", function() {
     missing2 = missing2.concat( [...Array(15).keys()].map(x => x+4151) );
     let missing3 = [...Array(30).keys()].map(x => x+6011);
     let missing4 = [...Array(20).keys()].map(x => x+8133);
+
+    let missings = missing1.concat(missing2).concat(missing3).concat(missing4);
 
     for (let i of missing1  ) {
       await this.mockObsToken.mint(this.bob, i);
@@ -91,7 +87,8 @@ describe("AirDropper", function() {
     newMintables =  newMintables.filter(x => ! (new Set(missing1).has(x)));
     newMintables =  newMintables.filter(x => ! (new Set(missing2).has(x)));
     newMintables =  newMintables.filter(x => ! (new Set(missing3).has(x)));
-    newMintables =  newMintables.filter(x => ! (new Set(missing4).has(x)));
+    // missing4 will be duplicates
+    // newMintables =  newMintables.filter(x => ! (new Set(missing4).has(x)));
 
     for (let i of newMintables.slice(0, 500)  ) {
       await this.mockNewToken.mint(this.alice, i);
@@ -120,20 +117,27 @@ describe("AirDropper", function() {
     // ----- done  setup test -----------
     
     let newTokenSupply = await this.mockNewToken.totalSupply();
-    expect(await this.mockNewToken.totalSupply()).to.be.bignumber.equal(new BN (10000 - 150));
+    console.log(await this.mockNewToken.totalSupply());
+    expect(await this.mockNewToken.totalSupply()).to.be.bignumber.equal(new BN (10000 - 150 + 20));
 
-    await this.airDropper.recallTokens();
-    expect(await this.airDropper.head()).to.be.bignumber.equal(new BN(2001));
+    await this.airDropper.airdrop(missing1);
+    newTokenSupply = newTokenSupply.add(new BN(missing1.length));
+    console.log(await this.mockNewToken.totalSupply());
     expect(await this.mockNewToken.totalSupply()).to.be.bignumber.equal(newTokenSupply);
 
-    await this.airDropper.recallTokens();
-    newTokenSupply = newTokenSupply.add(new BN(15));
+    await this.airDropper.airdrop(missing2);
+    newTokenSupply = newTokenSupply.add(new BN(missing2.length));
+    console.log(await this.mockNewToken.totalSupply());
     expect(await this.mockNewToken.totalSupply()).to.be.bignumber.equal(newTokenSupply);
-    expect(await this.airDropper.head()).to.be.bignumber.equal(new BN(4001));
 
-    await this.airDropper.recallTokens();
-    newTokenSupply = newTokenSupply.add(new BN(20));
-    expect(await this.airDropper.head()).to.be.bignumber.equal(new BN(4021));
+    await this.airDropper.airdrop(missing3);
+    newTokenSupply = newTokenSupply.add(new BN(missing3.length));
+    console.log(await this.mockNewToken.totalSupply());
+    expect(await this.mockNewToken.totalSupply()).to.be.bignumber.equal(newTokenSupply);
+
+    await this.airDropper.airdrop(missing4);
+    newTokenSupply = newTokenSupply.add(new BN(missing4.length));
+    console.log(await this.mockNewToken.totalSupply());
     expect(await this.mockNewToken.totalSupply()).to.be.bignumber.equal(newTokenSupply);
 
  
