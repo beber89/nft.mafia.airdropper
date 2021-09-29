@@ -28,6 +28,8 @@ describe("AirDropper", function() {
       await this.mockNewToken.allowMinter(this.airDropper.address);
   });
 
+  // TODO: test setters
+
   it("recallTokens - 20 consecutive obselete mints", async function() {
     let mintables = [...Array(20).keys()];
     for (let i=0; i < mintables.length; i++) {
@@ -37,7 +39,7 @@ describe("AirDropper", function() {
      expect(await this.mockNewToken.totalSupply()).to.be.bignumber.equal(new BN(20));
   });
 
-  it.skip("recallTokens - 50 consecutive obselete mints, finished on three runs", async function() {
+  it("recallTokens - 50 consecutive obselete mints, finished on three runs", async function() {
     let mintables = [...Array(50).keys()];
     for (let i=0; i < mintables.length; i++) {
       await this.mockObsToken.mint(this.bob, i+1);
@@ -53,7 +55,7 @@ describe("AirDropper", function() {
   });
    
   // takes  alot of time to run - might need to increase timeout on different devices
-  it.only("recallTokens - almost realistic scenario", async function() {
+  it("recallTokens - almost realistic scenario", async function() {
     // total of 150 tokens need recall
     // Zeroth 2000 newTokens are complete
     // First 2000 missing 15 (should be minted according to obsTokens)
