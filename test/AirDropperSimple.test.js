@@ -49,7 +49,7 @@ describe("AirDropperSimple", function() {
   });
    
   // takes  alot of time to run - might need to increase timeout on different devices
-  it.only("recallTokens - almost realistic scenario", async function() {
+  it("recallTokens - almost realistic scenario", async function() {
     // total of 150 tokens need recall
     // Zeroth 2000 newTokens are complete
     // First 2000 missing 15 (should be minted according to obsTokens)
@@ -117,27 +117,21 @@ describe("AirDropperSimple", function() {
     // ----- done  setup test -----------
     
     let newTokenSupply = await this.mockNewToken.totalSupply();
-    console.log(await this.mockNewToken.totalSupply());
     expect(await this.mockNewToken.totalSupply()).to.be.bignumber.equal(new BN (10000 - 150 + 20));
 
     await this.airDropper.airdrop(missing1);
     newTokenSupply = newTokenSupply.add(new BN(missing1.length));
-    console.log(await this.mockNewToken.totalSupply());
     expect(await this.mockNewToken.totalSupply()).to.be.bignumber.equal(newTokenSupply);
 
     await this.airDropper.airdrop(missing2);
     newTokenSupply = newTokenSupply.add(new BN(missing2.length));
-    console.log(await this.mockNewToken.totalSupply());
     expect(await this.mockNewToken.totalSupply()).to.be.bignumber.equal(newTokenSupply);
 
     await this.airDropper.airdrop(missing3);
     newTokenSupply = newTokenSupply.add(new BN(missing3.length));
-    console.log(await this.mockNewToken.totalSupply());
     expect(await this.mockNewToken.totalSupply()).to.be.bignumber.equal(newTokenSupply);
 
     await this.airDropper.airdrop(missing4);
-    newTokenSupply = newTokenSupply.add(new BN(missing4.length));
-    console.log(await this.mockNewToken.totalSupply());
     expect(await this.mockNewToken.totalSupply()).to.be.bignumber.equal(newTokenSupply);
 
  
